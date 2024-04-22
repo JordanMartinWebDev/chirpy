@@ -30,24 +30,28 @@ func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cleaned := clearProfane(params.Body)
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	}
+
+	cleaned := clearProfane(params.Body, badWords)
 	respondWithJSON(w, http.StatusOK, returnVals{
 		CleanedBody: cleaned,
 	})
 }
 
-// Clean This Up Later
-func clearProfane(s string) string {
-	cleanedWords := []string{}
+func clearProfane(s string, badWords map[string]struct{}) string {
 	words := strings.Split(s, " ")
-	for _, word := range words {
-		lowered_word := strings.ToLower(word)
-		if lowered_word == "kerfuffle" || lowered_word == "sharbert" || lowered_word == "fornax" {
-			word = "****"
+	for i, word := range words {
+		loweredWord := strings.ToLower(word)
+		if _, ok := badWords[loweredWord]; ok {
+			words[i] = "****"
 		}
-		cleanedWords = append(cleanedWords, word)
 	}
-	return strings.Join(cleanedWords, " ")
+	cleaned := strings.Join(words, " ")
+	return cleaned
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
