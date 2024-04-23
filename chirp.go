@@ -1,32 +1,20 @@
 package main
 
 import (
-	"encoding/json"
-	"net/http"
+	"errors"
 	"strings"
 )
 
-func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
+type Chirp struct {
+	ID   int    `json:"id"`
+	Body string `json:"body"`
+}
+
+func ValidateChirp(s string) (string, error) {
 	const maxChirpLength = 140
-	type parameters struct {
-		Body string `json:"body"`
-	}
 
-	type returnVals struct {
-		CleanedBody string `json:"cleaned_body"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
-	err := decoder.Decode(&params)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Could not decode parameters")
-		return
-	}
-
-	if len(params.Body) > maxChirpLength {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
-		return
+	if len(s) > maxChirpLength {
+		return "", errors.New("Chirp is too long")
 	}
 
 	badWords := map[string]struct{}{
@@ -35,10 +23,8 @@ func handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 		"fornax":    {},
 	}
 
-	cleaned := clearProfane(params.Body, badWords)
-	respondWithJSON(w, http.StatusOK, returnVals{
-		CleanedBody: cleaned,
-	})
+	cleaned := clearProfane(s, badWords)
+	return cleaned, nil
 }
 
 func clearProfane(s string, badWords map[string]struct{}) string {
