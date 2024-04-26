@@ -3,8 +3,9 @@ package database
 import "errors"
 
 type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
+	ID       int    `json:"id"`
+	AuthorID int    `json:"author_id"`
+	Body     string `json:"body"`
 }
 
 func (db *DB) GetChirps() ([]Chirp, error) {
@@ -33,7 +34,7 @@ func (db *DB) GetChirp(id int) (Chirp, error) {
 	return dbStructure.Chirps[id], nil
 }
 
-func (db *DB) CreateChirp(body string) (Chirp, error) {
+func (db *DB) CreateChirp(body string, userID int) (Chirp, error) {
 	dbStructure, err := db.loadDB()
 	if err != nil {
 		return Chirp{}, err
@@ -41,8 +42,9 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 
 	id := len(dbStructure.Chirps) + 1
 	chirp := Chirp{
-		ID:   id,
-		Body: body,
+		ID:       id,
+		AuthorID: userID,
+		Body:     body,
 	}
 	dbStructure.Chirps[id] = chirp
 
