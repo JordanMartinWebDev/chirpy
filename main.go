@@ -3,16 +3,28 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/jordanmartinwebdev/chirpy/internal/database"
 )
 
-func main() {
-	godotenv.Load()
+type apiConfig struct {
+	fileserverHits int
+	DB             *database.DB
+	jwtSecret      string
+}
 
+func main() {
 	const port = "8080"
 	const filepathRoot = "."
+
+	godotenv.Load(".env")
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is not set")
+	}
 
 	db, err := database.NewDB("database.json")
 	if err != nil {
@@ -22,6 +34,7 @@ func main() {
 	apiCfg := &apiConfig{
 		fileserverHits: 0,
 		DB:             db,
+		jwtSecret:      jwtSecret,
 	}
 
 	mux := http.NewServeMux()
@@ -49,9 +62,4 @@ func main() {
 
 	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
 	log.Fatal(srv.ListenAndServe())
-}
-
-type apiConfig struct {
-	fileserverHits int
-	DB             *database.DB
 }
