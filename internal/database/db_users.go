@@ -3,27 +3,28 @@ package database
 import "errors"
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID             int    `json:"id"`
+	Email          string `json:"email"`
+	HashedPassword string `json:"hashed_password"`
 }
 
-func (db *DB) CreateUser(email string, password string) (User, error) {
+var ErrAlreadyExists = errors.New("already exists")
+
+func (db *DB) CreateUser(email, hashedPassword string) (User, error) {
+	if _, err := db.GetUserByEmail(email); !errors.Is(err, ErrNotExist) {
+		return User{}, ErrAlreadyExists
+	}
+
 	dbStructure, err := db.loadDB()
 	if err != nil {
 		return User{}, err
 	}
 
-	user, err := db.UserExists(email)
-	if err != nil {
-		return user, err
-	}
-
 	id := len(dbStructure.Users) + 1
-	user = User{
-		ID:       id,
-		Email:    email,
-		Password: password,
+	user := User{
+		ID:             id,
+		Email:          email,
+		HashedPassword: hashedPassword,
 	}
 	dbStructure.Users[id] = user
 
@@ -34,7 +35,21 @@ func (db *DB) CreateUser(email string, password string) (User, error) {
 	return user, nil
 }
 
-func (db *DB) UserExists(email string) (User, error) {
+func (db *DB) GetUser(id int) (User, error) {
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return User{}, err
+	}
+
+	user, ok := dbStructure.Users[id]
+	if !ok {
+		return User{}, ErrNotExist
+	}
+
+	return user, nil
+}
+
+func (db *DB) GetUserByEmail(email string) (User, error) {
 	dbStructure, err := db.loadDB()
 	if err != nil {
 		return User{}, err
@@ -42,8 +57,8 @@ func (db *DB) UserExists(email string) (User, error) {
 
 	for _, user := range dbStructure.Users {
 		if user.Email == email {
-			return user, errors.New("user already exists")
+			return user, nil
 		}
 	}
-	return User{}, nil
+	return User{}, ErrNotExist
 }

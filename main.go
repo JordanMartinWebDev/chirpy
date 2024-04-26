@@ -4,10 +4,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/jordanmartinwebdev/chirpy/internal/database"
 )
 
 func main() {
+	godotenv.Load()
+
 	const port = "8080"
 	const filepathRoot = "."
 
