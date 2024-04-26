@@ -1,6 +1,8 @@
 package database
 
-import "errors"
+import (
+	"errors"
+)
 
 type Chirp struct {
 	ID       int    `json:"id"`
@@ -53,4 +55,19 @@ func (db *DB) CreateChirp(body string, userID int) (Chirp, error) {
 		return Chirp{}, err
 	}
 	return chirp, nil
+}
+
+func (db *DB) DeleteChirp(id, userID int) error {
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return err
+	}
+
+	chirp := dbStructure.Chirps[id]
+	if chirp.AuthorID != userID {
+		return errors.New("unauthorized")
+	}
+
+	delete(dbStructure.Chirps, id)
+	return nil
 }
