@@ -13,6 +13,7 @@ type apiConfig struct {
 	fileserverHits int
 	DB             *database.DB
 	jwtSecret      string
+	PolkaKey       string
 }
 
 func main() {
@@ -22,6 +23,10 @@ func main() {
 	godotenv.Load(".env")
 
 	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is not set")
+	}
+	PolkaKey := os.Getenv("POLKA_KEY")
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET environment variable is not set")
 	}
@@ -35,6 +40,7 @@ func main() {
 		fileserverHits: 0,
 		DB:             db,
 		jwtSecret:      jwtSecret,
+		PolkaKey:       PolkaKey,
 	}
 
 	mux := http.NewServeMux()
