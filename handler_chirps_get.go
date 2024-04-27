@@ -22,7 +22,14 @@ func (cfg *apiConfig) handlerChirpGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *apiConfig) handlerChirpsRetrieve(w http.ResponseWriter, r *http.Request) {
-	dbChirps, err := cfg.DB.GetChirps()
+	authorIDString := r.URL.Query().Get("author_id")
+	authorID, err := strconv.Atoi(authorIDString)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't convert ID to int")
+		return
+	}
+
+	dbChirps, err := cfg.DB.GetChirps(authorID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't retrieve chirps")
 		return

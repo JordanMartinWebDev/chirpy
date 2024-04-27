@@ -10,7 +10,7 @@ type Chirp struct {
 	Body     string `json:"body"`
 }
 
-func (db *DB) GetChirps() ([]Chirp, error) {
+func (db *DB) GetChirps(authorID int) ([]Chirp, error) {
 	dbStructure, err := db.loadDB()
 	if err != nil {
 		return nil, err
@@ -19,6 +19,16 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 	chirps := make([]Chirp, 0, len(dbStructure.Chirps))
 	for _, chirp := range dbStructure.Chirps {
 		chirps = append(chirps, chirp)
+	}
+
+	if authorID != 0 {
+		authorChirps := make([]Chirp, 0, len(chirps))
+		for _, chirp := range chirps {
+			if chirp.AuthorID == authorID {
+				authorChirps = append(authorChirps, chirp)
+			}
+		}
+		return authorChirps, nil
 	}
 
 	return chirps, nil
