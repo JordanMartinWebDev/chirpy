@@ -55,6 +55,9 @@ func main() {
 	mux.HandleFunc("PUT /api/users", apiCfg.handlerUserUpdate)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.handlerChirpsDelete)
 
+	//Web Hooks
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handlerPolkaWebhook)
+
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handleMetrics)
 
 	corsMux := middlewareCors(mux)
