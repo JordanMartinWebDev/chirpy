@@ -25,8 +25,7 @@ func (cfg *apiConfig) handlerChirpsRetrieve(w http.ResponseWriter, r *http.Reque
 	authorIDString := r.URL.Query().Get("author_id")
 	authorID, err := strconv.Atoi(authorIDString)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't convert ID to int")
-		return
+		authorID = 0
 	}
 
 	dbChirps, err := cfg.DB.GetChirps(authorID)
@@ -43,9 +42,16 @@ func (cfg *apiConfig) handlerChirpsRetrieve(w http.ResponseWriter, r *http.Reque
 		})
 	}
 
-	sort.Slice(chirps, func(i, j int) bool {
-		return chirps[i].ID < chirps[j].ID
-	})
+	sortMethod := r.URL.Query().Get("sort")
+	if sortMethod == "desc" {
+		sort.Slice(chirps, func(i, j int) bool {
+			return chirps[i].ID > chirps[j].ID
+		})
+	} else {
+		sort.Slice(chirps, func(i, j int) bool {
+			return chirps[i].ID < chirps[j].ID
+		})
+	}
 
 	respondWithJSON(w, http.StatusOK, chirps)
 }
